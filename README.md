@@ -8,6 +8,8 @@
 
 1. [Flink 文档](https://github.com/OlifChou/blog/blob/master/flink/flink-doc.pdf)
 
+2. [Kafka 文档](https://github.com/OlifChou/blog/blob/master/kafka/kafka.pdf)
+
 
 ## License
 
