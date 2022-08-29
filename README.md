@@ -10,6 +10,8 @@
 
 2. [Kafka 文档](https://github.com/OlifChou/blog/blob/master/kafka/kafka.pdf)
 
+3. [Redis 文档](https://github.com/OlifChou/blog/blob/master/redis/Redis.pdf)
+
 
 ## License
 
