@@ -1,0 +1,69 @@
+1. 自我介绍
+面试官您好，我叫周宇，我在2019年毕业于常州大学的软件工程专业。首先，我加入CFFEX公司，担任Java开发工程师，负责Femas Future trade app的后端开发工作。在项目中，我负责的业务有登录注册，公告信息，业务办理和金融数据，主要使用的技术有Java, spring boot, mysql, redis. 然后，我在2021年6月加入了CITI group，担任Java&Data开发工程师，负责Insight美联储风险报表的计算平台开发，Insight实际上是一个规则引擎系统，系统通过输入的规则数据对金融数据进行匹配与局和计算处理；我在项目中主要负责了restatement全局重构，数据加载与规则匹配的开发，Data lineage模块的开发，以及Trouble shooting. 在Insight项目中，我们使用了Java, Spark, Spring boot, kafka, hadoop等。
+
+2. 项目分析
+a. Insight
+1) 背景：Insight项目prepare模块是负责报表业务处理和Spark Job提交的，一共有三种运行场景，分别是Regular, Restatement和Web. 其中Regular是计算最新报表，Restatement是对过去版本报表重新计算，web是通过前端调用计算选定的rule数据 为应对不同场景带来的业务差异，我引入了抽象工厂，以运行场景维度创建工厂，按业务关联度划分模块，将这些模块作为工厂产品。
+
+每个报表需要加载若干个数据源，每个数据源都有独特的处理逻辑，我们需要把数据源处理逻辑嵌入到主流程中，我引入了桥接模式，通过定义FormSource接口，每个报表分别注册自己所需的数据源Bean，实现可插拔的插件式编程。
+
+2）在Sparkjob中，我们首先使用Prepare模块的数据源sql来加载金融数据集，然后解析prepare模块传入的Rule数据集，根据配置的Filter Columns来匹配金融数据，形成一个Rule and data的Full数据集
+
+金融数据包括用户贷款，
+
+3）Data Lineage是一个web项目，用于drilldown计算每条结果的金融数据，由此来验证结果的准确性和让计算流程可视化。Data Lineage提供接口给前端，前端点击一条结果，后端返回给计算出这条结果的金融数据。
+
+4）之前，我们是通过java的vm options一个参数一个参数的从prepare传到spark job，但这样很难以去维护和扩展，后续我将所有需要传递的参数封装到一个Java对象里，然后序列化成Json传递，然后在Spark Job端反序列化这个json成java对象。
+反序列工具：
+
+5）我们将配置全部迁移到配置中心，让数据库连接等配置由相关团队统一维护，降低了维护成本
+
+6）之前，我们将结果存储在hive中，需求告诉我们要将结果表存储到oracle并且要保证性能，我开发了存储到oracle的代码，并且为oracle表创建联合索引，并添加了日期分区，在1亿的数据量下进行压测，查询时间为5秒以下
+
+7）我们的报表任务每次都要耗时半小时到1个小时，我通过分析输入数据和计算过程，将输入的数据进行重新分区，让每个partition的数据均衡，并且适时地缓存中间结果，有效的降低了任务耗时到15分钟到30分钟
+
+8）Spark Job总是内存溢出，我将大数据集RO通过Spark加载为Dataset,并且增加了Driver的内存，提升了Spark job的稳定性
+
+
+b. Femas app
+1) kafka相关的八股文
+
+2) 当用户登录成功的时候，后端返回两个token，分别是access token，refresh token和过期时间。如果前端发现access token过期，则使用refresh token请求最新的access token，后端判断refresh token是否过期，并返回最新的token
+
+3) 延迟双删，缓存穿透，缓存雪崩，缓存击穿
+
+4) 爬虫，我们针对不同的网站定义了不同的请求和解析策略，并统一写入数据库。策略模式和工厂模式的区别
+
+5) 信息发布，修改和审核
+
+6) Vue
+
+
+
+English
+
+1. Self Introduction
+Hi, everyone. My name is Zhou Yu. I graduated from Changzhou University in 2019, majoring in software engineering. First, I joined CFFEX IT as a Java developer, responsible for the back-end development of the Femas Future trade app. In the project, I am responsible for the business of login/registration, announcement publishing, business handling and financial data, and the main technologies used are Java, spring boot, MySQL, and redis. 
+Then, I joined Citi Group in June 2021 as a Java&Data developer. In citi, I'm responsible for the development of Insight platform, which is a rule engine for calculating Federal Reserve risk report. Insight platform applies the rule on financial data to implement filtering and aggregation. The technologies used are Java, Spark, Spring boot, kafka, hadoop and son on.
+
+2. Project Analysis
+a. Insight
+1) The prepare module Insight is responsible for report business processing and Spark job submission. There are three kinds of running scene, namely Regular job, Restatement job and Web job. Regular job is to compute the latest report, Restatement job is to recompute the report of the past version, and the web is to compute the selected rule through the front-end call. To deal with the business differences brought by different scenes, I introduced an abstract factory and create a factory based on the running scene dimension, I divide the modules according to the business relevance, and take these modules as factory products.
+
+Each report needs to load several data sources, and each data source has a unique processing logic. We need to embed the data source processing logic into the main process. I introduced the bridge mode. By defining the FormSource interface list, each report registers its own required data source bean to achieve plug-in programming.
+
+2) In Sparkjob, we first use the data source sql build by Prepare module to load the financial dataset, then match the financial data according to the configured Filter Columns of rule data. Finally, we build a full dataset including rule and data.
+
+3). Data Lineage is a web project used to drilldown report result to verify the accuracy of the results and visualize the calculation process. Data Lineage provides apis to the front end. Users can click one result and the back-end will response the source data which used to compute it.
+
+4). We passed parameters by the Java VM options from prepare module to spark job one by one before. But it was difficult to maintain and extend. Then, I put all the parameters to be passed into a Java object, serialized them into Json, and then deserialized the json into a Java object at the spark job.
+
+5). We migrated all the configurations to the config center, so that the database connection and other configurations are uniformly maintained by the relevant teams. It reducing the maintenance cost
+
+6). Before, we stored the results in Hive. The requirement told us to store the result table in Oracle and ensure the performance. I developed the code of storing result in Oracle, created a joint index for the Oracle table, and added partitions by date. At last, The query time was less than 5 seconds under the pressure of 100 million data.
+
+7). Our spark job takes half an hour to one hour each time. By analyzing the input data and the calculation process, I repartition the input data to balance the data of each partition, and cache the middle data. It reduces the job time to 15 to 30 minutes.
+
+8). Spark jobs are always out of memory. I load the large data into a spark dataset, and increase the memory of the driver to improve the stability of the Spark job
+
+
