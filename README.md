@@ -12,6 +12,8 @@
 
 3. [Redis 文档](https://github.com/OlifChou/blog/blob/master/redis/Redis.pdf)
 
+4. [Spark 文档](https://github.com/OlifChou/blog/blob/master/spark/spark-core.pdf)
+
 
 ## License
 
